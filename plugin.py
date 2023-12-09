@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 """
-domoticz-emmeti-mirai Heat Pump plugin for Domoticz.
-Original Author: Patrick Hamers https://github.com/Sateetje (SPRSUN-Modbus plugin for Domoticz)
+domoticz-emmeti-mirai heat pump plugin for Domoticz.
 Author: Paolo Subiaco https://github.com/CreasolTech
-Tested with Emmeti Mirai EH1018DC heat pump (Modbus, 9600bps, slave addr=1)
+Based on https://github.com/Sateetje/SPRSUN-Modbus plugin and https://github.com/CreasolTech/domoticz-hyundai-kia plugin for Domoticz
+Tested with Emmeti Mirai EH1018DC Rev.C heat pump (Modbus, 9600bps, slave addr=1)
 
 THIS SOFTWARE COMES WITH ABSOLUTE NO WARRANTY. 
 
