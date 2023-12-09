@@ -4046,3 +4046,4 @@ def _get_diagnostic_string() -> str:
 
 # For backward compatibility
 _getDiagnosticString = _get_diagnostic_string
+
