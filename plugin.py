@@ -51,12 +51,13 @@ DEVS={ #topic:                Modbus, Unit,Type,Sub,swtype, Options, Image,  "en
     "COMPRESSOR_NOW":       [ 8996,     2,243,6,0,    None,       None,   "Compressor now",   "Compressore ora"   ],
     "SP_HOTWATER":          [ 16398,    3,242,1,0,  {'ValueStep':'1', ' ValueMin':'10', 'ValueMax':'60', 'ValueUnit':'°C'}, None,  "SetPoint Hot Water", "Termostato ACS"    ],
     "SP_HOTWATER_OUTLET":   [ 16400,    4,242,1,0,  {'ValueStep':'1', ' ValueMin':'10', 'ValueMax':'60', 'ValueUnit':'°C'}, None,  "SetPoint Hot Water outlet", "Termostato uscita per ACS" ],
-    "SP_WINTER_MIN":        [ 16420,    5,242,1,0,  {'ValueStep':'1', ' ValueMin':'10', 'ValueMax':'60', 'ValueUnit':'°C'}, None,  "Temp min outlet Winter", "Temp. min uscita inverno"  ],
-    "SP_WINTER_MAX":        [ 16421,    6,242,1,0,  {'ValueStep':'1', ' ValueMin':'20', 'ValueMax':'60', 'ValueUnit':'°C'}, None,  "Temp max outlet Winter", "Temp. max uscita inverno"  ],
-    "SP_SUMMER_MIN":        [ 16427,    7,242,1,0,  {'ValueStep':'0.5', ' ValueMin':'6.5', 'ValueMax':'25', 'ValueUnit':'°C'}, None,  "Temp min outlet Summer", "Temp. min uscita estate"  ],
-    "SP_SUMMER_MAX":        [ 16428,    8,242,1,0,  {'ValueStep':'0.5', ' ValueMin':'6.5', 'ValueMax':'25', 'ValueUnit':'°C'}, None,  "Temp max outlet Summer", "Temp. max uscita estate"  ],
-    "TEMP_EXTERNAL":        [ 8973,     9, 80,5,0,  None,          None,   "Temp. ambient",    "Temp. esterna"     ],
-    "TEMP_OUTLET":          [ 8974,     10,80,5,0,  None,          None,   "Temp. outlet",     "Temp. uscita"      ],
+    "SP_WINTER_MIN":        [ 16420,    5,242,1,0,  {'ValueStep':'1', ' ValueMin':'10', 'ValueMax':'60', 'ValueUnit':'°C'}, None,  "SetPoint outlet Winter min", "Temp min uscita inverno"  ],
+    "SP_WINTER_MAX":        [ 16421,    6,242,1,0,  {'ValueStep':'1', ' ValueMin':'20', 'ValueMax':'60', 'ValueUnit':'°C'}, None,  "SetPoint outlet Winter max", "Temp max uscita inverno"  ],
+    "SP_SUMMER_MIN":        [ 16427,    7,242,1,0,  {'ValueStep':'0.5', ' ValueMin':'6.5', 'ValueMax':'25', 'ValueUnit':'°C'}, None,  "SetPoint outlet Summer min", "Temp min uscita estate"  ],
+    "SP_SUMMER_MAX":        [ 16428,    8,242,1,0,  {'ValueStep':'0.5', ' ValueMin':'6.5', 'ValueMax':'25', 'ValueUnit':'°C'}, None,  "SetPoint outlet Summer max", "Temp max uscita estate"  ],
+    "TEMP_OUTDOOR":         [ 8973,     9, 80,5,0,  None,           None,   "Temp outdoor",    "Temp esterna"     ],
+    "TEMP_OUTLET":          [ 8974,     10,80,5,0,  None,           None,   "Temp outlet",     "Temp uscita"      ],
+    "TEMP_OUTLET_SET":      [ 8991,     11,80,5,0,  None,           None,   "Temp outlet computed", "Temp uscita calcolata"   ],
 }
 
 class BasePlugin:
@@ -111,6 +112,8 @@ class BasePlugin:
                 if i=="COMPRESSOR_MAX":
                     nValue=1 if value>0 else 0  # dimmer: nValue=1 (On) or 0 (Off)
                 else:
+                    if DEVS[i][DEVTYPE]==80 and value>=32768:    #Temperature, negative
+                        value=value-65536
                     nValue=int(value/10)
                 sValue=str(value/10)
                 Devices[DEVS[i][DEVUNIT]].Update(nValue=nValue, sValue=sValue)
@@ -129,16 +132,17 @@ class BasePlugin:
             if Level>100:
                 Level=100
             nValue=1 if Level>0 else 0
-                
             self.WriteRS485(DEVS["COMPRESSOR_MAX"][DEVADDR], Level*10)
+            Devices[Unit].Update(nValue=nValue, sValue=sValue)
         else:
             for i in DEVS:  # Find the index of DEVS
                 if DEVS[i][DEVUNIT]==Unit:
-                    self.WriteRS485(DEVS[i][DEVADDR], int(Level*10))
+                    if DEVS[i][DEVADDR]>=16384:  # Addresses below 16384 are read-only, in EMMETI heat pumps
+                        self.WriteRS485(DEVS[i][DEVADDR], int(Level*10))
+                        Devices[Unit].Update(nValue=nValue, sValue=sValue)
                     break
 
 
-        Devices[Unit].Update(nValue=nValue, sValue=sValue)
 #        Devices[Unit].Refresh()
 
     def WriteRS485(self, Register, Value):
