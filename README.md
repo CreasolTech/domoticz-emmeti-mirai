@@ -1,47 +1,52 @@
 # domoticz-emmeti-mirai 
-Domoticz Emmeti Mirai heat pump python plugin for Domoticz
+This is a plugin for the free open-source [Domoticz home automation system](https://www.domoticz.com) that **read and write some parameters from/to the [Emmeti Mirai heat pump](https://emmeti.com)** by Modbus connection (RS485 serial connection).
 
-Forked from simat-git/SDM120-Modbus 
-Forked from Sateetje/SPRSUN-Modbus
+Emmeti Mirai heat pumps have a **RS485 port designed to communicate by Modbus protocol** with Emmeti Febos-HP device which read the power from the electricity grid and set the maximum compressor frequency (power) that the heat pump can use to improve own-consumption. 
 
-This version allows multiple instances to work on Domoticz 2023.2 which uses multithreaded loading of the Plugins.
-Exclusive access on the serial port is now enforced to ensure only one instance at a time can access that port.
+**Who already have a domotic system and photovoltaic on the roof**, do not need to reinvent the wheel installing Febos-HP: they **can use an automation (LUA script?) that** controls the heat pump in this way:
+* **increase the heat pump power consumption in case that energy is exported to the grid** (solar photovoltaic is producing more than house usage), increasing the self-consumption
+* **in the Winter**, act as a smart thermostat that **increases the room temperature setpoint (overheating) in case of excess photovoltaic production**, to get the heat pump off in the evening/night
+* **in the Summer**, activates the heat pump only if there is enough solar photovoltaic production, **consuming Zero Watt from the electrical grid**
+
+[A LUA script for Domoticz that controls the Emmeti Mirai heat pump is available in github](https://github.com/CreasolTech/domoticz_lua_scripts).
+
+Anyway, using this plugin is possible to read and change main heat pump parameters manually.
+
+<a href="https://www.creasol.it/en/support/domotics-home-automation-and-diy/controlling-heat-pump-to-maximize-power-consumption-from-photovoltaic"><img src="https://images.creasol.it/domoticz-emmeti-mirai-screenshot.png" alt="Domoticz plugin to manage Emmeti Mirai SMI heat pump" style="float: left; margin-right: 2em;" /></a><br clear="all">
+
+Plugin is tested using Emmeti Mirai SMI EH1018DC with firmware Rev.C: please note that **different heat pump firmware version lead to different register address**.
+
+**This software comes with absolute no warranty. Please check the manual to verify that modbus address registers meets the plugin configuration (check next section).**
 
 
 # Installation
-cd ~/domoticz/plugins<br>
+
+This plugin can be installed from [Python Plugin Manager](https://github.com/ycahome/pp-manager) or [Python Plugins Manager](https://github.com/stas-demydiuk/domoticz-plugins-manager) which also permit to update plugin easily or automatically.
+
+Alternatively, it's possible to give the following commands from the linux shell:
+
+```
+cd ~/domoticz/plugins
 git clone https://github.com/CreasolTech/domoticz-emmeti-mirai
+```
 
-Used python modules: <br>
-minimalmodbus -> http://minimalmodbus.readthedocs.io<br>
+Used python modules: 
+minimalmodbus -> http://minimalmodbus.readthedocs.io
 
+Please edit the *plugin.py* file and check that register address of your heat pump are exactly the ones specified in the configuration (second field in the parameter list).
+
+<img src="https://images.creasol.it/domoticz-emmeti-mirai-plugin.png" alt="Domoticz plugin configuration" style="float: left; margin-right: 2em;" /></a><br clear="all">
+
+Restart Domoticz, then go to Setup -> Hardware and add the Emmeti Mirai heat pump plugin, specifying a name for that hardware and the serial port to connect heat pump.
+
+**Plugin can be easily translate in other languages**: just add the language code to LANGS variable, and add a field to each device with the translated name of device. Please send a copy of the plugin.py file to linux at creasol dot it 
+
+
+# Credits
+Many thanks to:
+* [Patrick Hamers](https://github.com/Sateetje), who developed the plugin for [SPRSUN heat pump](https://github.com/Sateetje/SPRSUN-Modbus)
 
 ***
-
-# Charging the electric car in a smart way
-
-Creasol has developed a **cheap and smart DIY EVSE module** that can work stand-alone or connected to Domoticz.
-
-[![Video showing electric vehicle charging by Domoticz and Creasol DomBusEVSE module](https://images.creasol.it/youtube_small.png) Video showing electric car charging by Domoticz and DomBusEVSE module](https://www.youtube.com/watch?v=fyDtGO6S1UI)
-
-Features:
-* detects plug connection and disconnection
-* detects when the electric vehicle starts and stops charging
-* detects alarms from vehicle
-* interfaces a bidirectional energy meter to know the real time import or export power from grid
-* operates as __stand-alone__ (no need for a domotic controller) with the possibility to select two charging mode:
-    1. __use the maximum power allowed by electricity meter__, preventing overloads and disconnections, without exceeding the power supported by the charging cable
-    2. __use only renewable energy (keep import power around 0W)__
-
-* operates in a __controlled mode, with Domoticz__ home automation system: in this case it's possible to 
-	1. easily set the __minimum and maximum battery level__
-	2. easily set the __maximum charging current__
-	3. __when battery level is below minimum, charge at the max power__ permitted by the electricity meter (in Italy, alternates 90 minutes at maximum power + 27% and 90 minutes at maximum power + 10%, ___it's not possible to charge faster!___ The electrical system must be checked carefully when using maximum power, to avoid overheating and fires!!)
-	4. __when battery level is between minimum and maximum, charge using only power from renewable energy__ (from photovoltaic) keeping 0W imported from the grid.
-
-More info at https://www.creasol.it/EVSE
-
-[![Video about Creasol DomBus modules for Domoticz](https://images.creasol.it/youtube_small.png) Video about DomBus modules](https://youtu.be/QfkT5J5FWoM)
 
 
 
