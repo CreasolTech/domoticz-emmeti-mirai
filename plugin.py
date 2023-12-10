@@ -102,7 +102,6 @@ class BasePlugin:
 
     def onHeartbeat(self):
 
-        value=self.rs485.read_register(16387, 0, 3, False)
         for i in DEVS:
             try:
                 value=self.rs485.read_register(DEVS[i][DEVADDR], 0, 3, False)
