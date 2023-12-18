@@ -52,7 +52,7 @@ Restart Domoticz, then go to Setup -> Hardware and add the Emmeti Mirai heat pum
 Many thanks to:
 * [Patrick Hamers](https://github.com/Sateetje), who developed the plugin for [SPRSUN heat pump](https://github.com/Sateetje/SPRSUN-Modbus)
 
-<a href="https://www.creasol.it/en/support/domotics-home-automation-and-diy/controlling-heat-pump-to-maximize-power-consumption-from-photovoltaic"><img src="https://images.creasol.it/domoticz-emmeti-mirai-screenshot2.png?v=2" alt="Domoticz plugin to manage Emmeti Mirai SMI heat pump" style="float: left; margin-right: 2em;" /></a><br clear="all">
+<a href="https://www.creasol.it/en/support/domotics-home-automation-and-diy/controlling-heat-pump-to-maximize-power-consumption-from-photovoltaic"><img src="https://images.creasol.it/domoticz-emmeti-mirai-screenshot3.png" alt="Domoticz plugin to manage Emmeti Mirai SMI heat pump" style="float: left; margin-right: 2em;" /></a><br clear="all">
 
 
 ***
