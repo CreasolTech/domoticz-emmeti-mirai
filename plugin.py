@@ -15,11 +15,24 @@ Requirements:
     2.Communication module Modbus USB to RS485 converter module
 """
 """
-<plugin key="EmmetiMirai" name="Emmeti-Mirai heat pump" version="1.0" author="CreasolTech">
+<plugin key="EmmetiMirai" name="Emmeti-Mirai heat pump" version="1.1" author="CreasolTech" externallink="https://github.com/CreasolTech/domoticz-emmeti-mirai">
+    <description>
+        <h2>Domoticz Emmeti Mirai heat pump - Version 1.1</h2>
+    </description>
     <params>
         <param field="SerialPort" label="Modbus Port" width="200px" required="true" default="/dev/ttyUSB0" />
         <param field="Mode1" label="Baud rate" width="40px" required="true" default="9600"  />
         <param field="Mode2" label="Device ID" width="40px" required="true" default="1" />
+        <param field="Mode3" label="Poll interval">
+            <options>
+                <option label="10 seconds" value="10" />
+                <option label="20 seconds" value="20" />
+                <option label="30 seconds" value="30" default="true" />
+                <option label="60 seconds" value="60" />
+                <option label="120 seconds" value="120" />
+                <option label="240 seconds" value="240" />
+            </options>
+        </param>
         <param field="Mode6" label="Debug" width="75px">
             <options>
                 <option label="True" value="Debug"/>
@@ -68,7 +81,8 @@ class BasePlugin:
     def onStart(self):
         devicecreated = []
         Domoticz.Log("Starting Emmeti-Mirai plugin")
-        Domoticz.Heartbeat(30)
+        self.pollTime=30 if Parameters['Mode3']=="" else int(Parameters['Mode3'])
+        Domoticz.Heartbeat(self.pollTime)
         self.runInterval = 1
         self._lang=Settings["Language"]
         # check if language set in domoticz exists

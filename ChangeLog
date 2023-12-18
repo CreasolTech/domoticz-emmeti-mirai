@@ -1,0 +1,8 @@
+domoticz-emmeti-mirai plugin
+ChangeLog
+
+20231218 1.1
+Added parameter to change poll interval
+
+20231209 1.0
+First version
