@@ -27,7 +27,7 @@ Alternatively, it's possible to give the following commands from the linux shell
 
 ```
 cd ~/domoticz/plugins
-git clone https://github.com/CreasolTech/
+git clone https://github.com/CreasolTech/domoticz-emmeti-mirai
 ```
 
 Then, in the future, to update the plugin it's possible to simply type
