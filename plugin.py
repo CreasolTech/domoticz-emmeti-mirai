@@ -5,7 +5,7 @@ Author: Paolo Subiaco https://github.com/CreasolTech
 Based on https://github.com/Sateetje/SPRSUN-Modbus plugin and https://github.com/CreasolTech/domoticz-hyundai-kia plugin for Domoticz
 Tested with Emmeti Mirai EH1018DC Rev.C heat pump (Modbus, 9600bps, slave addr=1)
 
-THIS SOFTWARE COMES WITH ABSOLUTE NO WARRANTY. 
+THIS SOFTWARE COMES WITH ABSOLUTE NO WARRANTY. USE AT YOUR OWN RISK!
 
 ** CHECK THE MANUAL OF YOUR EMMETI HEAT PUMP: DIFFERENT MODEL/VERSION HAVE DIFFERENT PARAMETER ADDRESS!!! **
 
@@ -15,14 +15,19 @@ Requirements:
     2.Communication module Modbus USB to RS485 converter module
 """
 """
-<plugin key="EmmetiMirai" name="Emmeti-Mirai heat pump" version="1.1" author="CreasolTech" externallink="https://github.com/CreasolTech/domoticz-emmeti-mirai">
+<plugin key="EmmetiMirai" name="Emmeti-Mirai heat pump" version="1.2" author="CreasolTech" externallink="https://github.com/CreasolTech/domoticz-emmeti-mirai">
     <description>
-        <h2>Domoticz Emmeti Mirai heat pump - Version 1.1</h2>
+        <h2>Domoticz Emmeti Mirai heat pump - Version 1.2</h2>
+        Get some values from the heat pump, and permit to set the compressor level to limit the power consumption to the desired value<br/>
+        <b>CHECK THE MANUAL OF YOUR EMMETI HEAT PUMP: DIFFERENT heat pump MODEL/VERSION HAVE DIFFERENT ADDRESS FOR PARAMETERS!!!</b>
+        Please open the plugin.py file and <b>verify parameter addresses (specified in DEVS variable) that are specified as base-0 address, while some Emmeti manuals
+        show the parameters using base-1 addressing!</b><br/>
+        <b>THIS SOFTWARE COMES WITH ABSOLUTE NO WARRANTY: USE AT YOUR OWN RISK!</b>
     </description>
     <params>
         <param field="SerialPort" label="Modbus Port" width="200px" required="true" default="/dev/ttyUSB0" />
         <param field="Mode1" label="Baud rate" width="40px" required="true" default="9600"  />
-        <param field="Mode2" label="Device ID" width="40px" required="true" default="1" />
+        <param field="Mode2" label="Heat pump address" width="40px" required="true" default="1" />
         <param field="Mode3" label="Poll interval">
             <options>
                 <option label="10 seconds" value="10" />
@@ -46,7 +51,6 @@ Requirements:
 
 import minimalmodbus    #v2.1.1
 import Domoticz         #tested on Python 3.9.2 in Domoticz 2021.1 and 2023.1
-
 
 
 LANGS=[ "en", "it" ] # list of supported languages, in DEVS dict below
@@ -82,7 +86,10 @@ class BasePlugin:
         devicecreated = []
         Domoticz.Log("Starting Emmeti-Mirai plugin")
         self.pollTime=30 if Parameters['Mode3']=="" else int(Parameters['Mode3'])
-        Domoticz.Heartbeat(self.pollTime)
+        self.heartbeat=self.pollTime if self.pollTime<=30 else 30   # heartbeat must be <=30 or a warning will be written in the log
+        self.elapsedTime=0
+        self.heartbeatnow=self.heartbeat        # used to track any temp modification of the heartbeat
+        Domoticz.Heartbeat(self.heartbeatnow)
         self.runInterval = 1
         self._lang=Settings["Language"]
         # check if language set in domoticz exists
@@ -106,7 +113,7 @@ class BasePlugin:
         self.rs485.serial.bytesize = 8
         self.rs485.serial.parity = minimalmodbus.serial.PARITY_EVEN
         self.rs485.serial.stopbits = 1
-        self.rs485.serial.timeout = 1
+        self.rs485.serial.timeout = 0.2
         self.rs485.serial.exclusive = True # Fix From Forum Member 'lost'
         self.rs485.debug = True
         self.rs485.mode = minimalmodbus.MODE_RTU
@@ -116,12 +123,18 @@ class BasePlugin:
         Domoticz.Log("Stopping Emmeti-Mirai plugin")
 
     def onHeartbeat(self):
-
+        self.elapsedTime+=self.heartbeatnow
+        if self.elapsedTime<self.pollTime:
+            return
+        self.elapsedTime=0
+        
+        errors=0
         for i in DEVS:
             try:
                 value=self.rs485.read_register(DEVS[i][DEVADDR], 0, 3, False)
             except:
-                Domoticz.Log(f"Error connecting to heat pump by Modbus, reading register {DEVS[i][DEVADDR]}");
+                Domoticz.Log(f"Error connecting to heat pump by Modbus, reading register {DEVS[i][DEVADDR]}")
+                errors+=1
             else:
                 if i=="COMPRESSOR_MAX":
                     nValue=1 if value>0 else 0  # dimmer: nValue=1 (On) or 0 (Off)
@@ -135,6 +148,16 @@ class BasePlugin:
                     Domoticz.Log(f"{i}, Addr={DEVS[i][DEVADDR]}, nValue={nValue}, sValue={sValue}")
 
         self.rs485.serial.close()  #  Close that door !
+        if errors:
+            Domoticz.Log(f"Increase heartbeat to avoid error in case of multiple access to the same serial port")
+            self.heartbeatnow+=1
+            Domoticz.Heartbeat(self.heartbeatnow)
+        else: #no errors
+            if self.heartbeatnow!=self.heartbeat:
+                Domoticz.Debug("Restore previous heartbeat value")
+                self.heartbeatnow=self.heartbeat
+                Domoticz.Heartbeat(self.heartbeatnow)
+
 
     def onCommand(self, Unit, Command, Level, Hue):
         Domoticz.Log(f"Command for {Devices[Unit].Name}: Unit={Unit}, Command={Command}, Level={Level}")

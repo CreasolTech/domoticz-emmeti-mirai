@@ -1,6 +1,12 @@
 domoticz-emmeti-mirai plugin
 ChangeLog
 
+20231220 1.2
+Fixed problem with refresh time longer than 30s (warning message on the log)
+
+Fixed the problem when two plugins access simultaneously to the same serial
+port: in that case the refresh time (heartbeat) is increased by 1 second
+
 20231218 1.1
 Added parameter to change poll interval
 
