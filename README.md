@@ -57,6 +57,7 @@ Many thanks to:
 
 ***
 
+Below a short list of modules, produced in Europe by Creasol,  designed for Domoticz.
 
 ## Creasol DomBus modules
 Our industrial and home automation modules are designed to be
@@ -69,6 +70,11 @@ Modules are available in two version:
 2. with **Modbus standard protocol**, working with [Home Assistant](https://www.home-assistant.io), [OpenHAB](https://www.openhab.org), [Node-RED](https://nodered.org)
 
 [Store website](https://store.creasol.it/domotics) - [Information website](https://www.creasol.it/domotics)
+
+### Youtube video showing DomBus modules 
+[![Creasol DomBus modules video](https://images.creasol.it/intro01_video.png)](https://www.creasol.it/DomBusVideo)
+
+
 
 ### DomBusEVSE - EVSE module to build a Smart Wallbox / EV charging station
 <a href="https://store.creasol.it/DomBusEVSE"><img src="https://images.creasol.it/creDomBusEVSE_200.png" alt="DomBusEVSE smart EVSE module to make a Smart Wallbox EV Charging station" style="float: left; margin-right: 2em;" align="left" /></a>

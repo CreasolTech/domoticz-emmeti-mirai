@@ -50,6 +50,7 @@ Requirements:
 """
 
 import minimalmodbus    #v2.1.1
+import time
 import Domoticz         #tested on Python 3.9.2 in Domoticz 2021.1 and 2023.1
 
 
@@ -130,22 +131,26 @@ class BasePlugin:
         
         errors=0
         for i in DEVS:
-            try:
-                value=self.rs485.read_register(DEVS[i][DEVADDR], 0, 3, False)
-            except:
-                Domoticz.Log(f"Error connecting to heat pump by Modbus, reading register {DEVS[i][DEVADDR]}")
-                errors+=1
-            else:
-                if i=="COMPRESSOR_MAX":
-                    nValue=1 if value>0 else 0  # dimmer: nValue=1 (On) or 0 (Off)
+            for retry in range(1,1):  # try 1 time to access the serial port
+                try:
+                    value=self.rs485.read_register(DEVS[i][DEVADDR], 0, 3, False)
+                except:
+                    Domoticz.Status(f"{retry}: Error connecting to heat pump by Modbus, reading reg-addr={DEVS[i][DEVADDR]}")
+                    errors+=1
+                    time.sleep(0.1)
                 else:
-                    if DEVS[i][DEVTYPE]==80 and value>=32768:    #Temperature, negative
-                        value=value-65536
-                    nValue=int(value/10)
-                sValue=str(value/10)
-                Devices[DEVS[i][DEVUNIT]].Update(nValue=nValue, sValue=sValue)
-                if Parameters["Mode6"] == 'Debug':
-                    Domoticz.Log(f"{i}, Addr={DEVS[i][DEVADDR]}, nValue={nValue}, sValue={sValue}")
+                    Domoticz.Status(f"{retry}: Successfully read reg.addr={DEVS[i][DEVADDR]}")
+                    if i=="COMPRESSOR_MAX":
+                        nValue=1 if value>0 else 0  # dimmer: nValue=1 (On) or 0 (Off)
+                    else:
+                        if DEVS[i][DEVTYPE]==80 and value>=32768:    #Temperature, negative
+                            value=value-65536
+                        nValue=int(value/10)
+                    sValue=str(value/10)
+                    Devices[DEVS[i][DEVUNIT]].Update(nValue=nValue, sValue=sValue)
+                    if Parameters["Mode6"] == 'Debug':
+                        Domoticz.Log(f"{i}, Addr={DEVS[i][DEVADDR]}, nValue={nValue}, sValue={sValue}")
+                    break
 
         self.rs485.serial.close()  #  Close that door !
         if errors:
@@ -183,12 +188,18 @@ class BasePlugin:
 #        Devices[Unit].Refresh()
 
     def WriteRS485(self, Register, Value):
+        for retry in range(1,10):
             try:
                  self.rs485.write_register(Register, Value, 0, 6, False)
 
                  self.rs485.serial.close()
             except:
-                Domoticz.Log("Error writing to heat pump Modbus");
+                Domoticz.Status(f"{retry}: Error writing to heat pump Modbus reg={Register} value={Value}")
+                time.sleep(0.1)
+            else:
+                Domoticz.Status(f"{retry}: Successfully written reg={Register} value={Value}")
+                break
+
 
 global _plugin
 _plugin = BasePlugin()
