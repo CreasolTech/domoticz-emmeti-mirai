@@ -131,7 +131,7 @@ class BasePlugin:
         
         errors=0
         for i in DEVS:
-            for retry in range(1,1):  # try 1 time to access the serial port
+            for retry in range(1,2):  # try 1 time to access the serial port
                 try:
                     value=self.rs485.read_register(DEVS[i][DEVADDR], 0, 3, False)
                 except:
