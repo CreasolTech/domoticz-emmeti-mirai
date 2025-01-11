@@ -81,7 +81,9 @@ DEVS={ #topic:                Modbus, Unit,Type,Sub,swtype, Options, Image,  "en
 class BasePlugin:
     def __init__(self):
         self.rs485 = ""
-        return
+        self.elapsedTime=0
+        self.heartbeat=30
+        self.heartbeatnow=30
 
     def onStart(self):
         devicecreated = []
@@ -114,7 +116,7 @@ class BasePlugin:
         self.rs485.serial.bytesize = 8
         self.rs485.serial.parity = minimalmodbus.serial.PARITY_EVEN
         self.rs485.serial.stopbits = 1
-        self.rs485.serial.timeout = 0.2
+        self.rs485.serial.timeout = 0.1
         self.rs485.serial.exclusive = True # Fix From Forum Member 'lost'
         self.rs485.debug = True
         self.rs485.mode = minimalmodbus.MODE_RTU
@@ -154,8 +156,8 @@ class BasePlugin:
 
         self.rs485.serial.close()  #  Close that door !
         if errors:
-            Domoticz.Log(f"Increase heartbeat to avoid error in case of multiple access to the same serial port")
-            self.heartbeatnow+=1
+            self.heartbeatnow=self.heartbeat+1+(time.monotonic_ns()&7)
+            Domoticz.Log(f"Increase heartbeat to {self.heartbeatnow} to avoid concurrent access to the same serial port")
             Domoticz.Heartbeat(self.heartbeatnow)
         else: #no errors
             if self.heartbeatnow!=self.heartbeat:
