@@ -38,12 +38,6 @@ Requirements:
                 <option label="240 seconds" value="240" />
             </options>
         </param>
-        <param field="Mode6" label="Debug" width="75px">
-            <options>
-                <option label="True" value="Debug"/>
-                <option label="False" value="Normal"  default="true" />
-            </options>
-        </param>
     </params>
 </plugin>
 
@@ -87,7 +81,7 @@ class BasePlugin:
 
     def onStart(self):
         devicecreated = []
-        Domoticz.Log("Starting Emmeti-Mirai plugin")
+        Domoticz.Status("Starting Emmeti-Mirai plugin")
         self.pollTime=30 if Parameters['Mode3']=="" else int(Parameters['Mode3'])
         self.heartbeat=self.pollTime if self.pollTime<=30 else 30   # heartbeat must be <=30 or a warning will be written in the log
         self.elapsedTime=0
@@ -99,7 +93,7 @@ class BasePlugin:
         if self._lang in LANGS:
             self.lang=DEVLANG+LANGS.index(self._lang)
         else:
-            Domoticz.Log(f"Language {self._lang} does not exist in dict DEVS, inside the domoticz-emmeti-mirai plugin, but you can contribute adding it ;-) Thanks!")
+            Domoticz.Error(f"Language {self._lang} does not exist in dict DEVS, inside the domoticz-emmeti-mirai plugin, but you can contribute adding it ;-) Thanks!")
             self._lang="en"
             self.lang=DEVLANG # default: english text
 
@@ -108,7 +102,7 @@ class BasePlugin:
             if DEVS[i][DEVUNIT] not in Devices:
                 Options=DEVS[i][DEVOPTIONS] if DEVS[i][DEVOPTIONS] else {}
                 Image=DEVS[i][DEVIMAGE] if DEVS[i][DEVIMAGE] else 0
-                Domoticz.Log(f"Creating device {i}, Name={DEVS[i][self.lang]}, Unit={DEVS[i][DEVUNIT]}, Type={DEVS[i][DEVTYPE]}, Subtype={DEVS[i][DEVSUBTYPE]}, Switchtype={DEVS[i][DEVSWITCHTYPE]} Options={Options}, Image={Image}")
+                Domoticz.Status(f"Creating device {i}, Name={DEVS[i][self.lang]}, Unit={DEVS[i][DEVUNIT]}, Type={DEVS[i][DEVTYPE]}, Subtype={DEVS[i][DEVSUBTYPE]}, Switchtype={DEVS[i][DEVSWITCHTYPE]} Options={Options}, Image={Image}")
                 Domoticz.Device(Name=DEVS[i][self.lang], Unit=DEVS[i][DEVUNIT], Type=DEVS[i][DEVTYPE], Subtype=DEVS[i][DEVSUBTYPE], Switchtype=DEVS[i][DEVSWITCHTYPE], Options=Options, Image=Image, Used=1).Create()
 
         self.rs485 = minimalmodbus.Instrument(Parameters["SerialPort"], int(Parameters["Mode2"]))
@@ -123,7 +117,7 @@ class BasePlugin:
         self.rs485.close_port_after_each_call = True
 
     def onStop(self):
-        Domoticz.Log("Stopping Emmeti-Mirai plugin")
+        Domoticz.Status("Stopping Emmeti-Mirai plugin")
 
     def onHeartbeat(self):
         self.elapsedTime+=self.heartbeatnow
@@ -153,14 +147,13 @@ class BasePlugin:
                         nValue=int(value/10)
                     sValue=str(value/10)
                     Devices[DEVS[i][DEVUNIT]].Update(nValue=nValue, sValue=sValue)
-                    if Parameters["Mode6"] == 'Debug':
-                        Domoticz.Log(f"{i}, Addr={DEVS[i][DEVADDR]}, nValue={nValue}, sValue={sValue}")
+                    # Domoticz.Log(f"{i}, Addr={DEVS[i][DEVADDR]}, nValue={nValue}, sValue={sValue}")
                     break
 
         self.rs485.serial.close()  #  Close that door !
         if errors:
             self.heartbeatnow=self.heartbeat+1+(time.monotonic_ns()&7)
-            Domoticz.Log(f"Increase heartbeat to {self.heartbeatnow} to avoid concurrent access to the same serial port")
+            Domoticz.Status(f"Increase heartbeat to {self.heartbeatnow} to avoid concurrent access to the same serial port")
             Domoticz.Heartbeat(self.heartbeatnow)
         else: #no errors
             if self.heartbeatnow!=self.heartbeat:
@@ -170,7 +163,7 @@ class BasePlugin:
 
 
     def onCommand(self, Unit, Command, Level, Hue):
-        Domoticz.Log(f"Command for {Devices[Unit].Name}: Unit={Unit}, Command={Command}, Level={Level}")
+        Domoticz.Status(f"Command for {Devices[Unit].Name}: Unit={Unit}, Command={Command}, Level={Level}")
 
         sValue=str(Level)
         nValue=int(Level)
