@@ -111,6 +111,7 @@ class BasePlugin:
         self.rs485.serial.parity = minimalmodbus.serial.PARITY_EVEN
         self.rs485.serial.stopbits = 1
         self.rs485.serial.timeout = 0.1
+        self.rs485.serial.write_timeout = 0 # used in case of problem opening serial device: 0 => return immediately in case of error writing port
         self.rs485.serial.exclusive = True # Fix From Forum Member 'lost'
         self.rs485.debug = True
         self.rs485.mode = minimalmodbus.MODE_RTU
