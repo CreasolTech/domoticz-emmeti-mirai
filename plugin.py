@@ -135,7 +135,7 @@ class BasePlugin:
                 try:
                     value=self.rs485.read_register(DEVS[i][DEVADDR], 0, 3, False)
                 except:
-                    Domoticz.Status(f"Try {retry}: Error connecting to heat pump by Modbus, reading reg-addr={DEVS[i][DEVADDR]}")
+                    Domoticz.Error(f"Try {retry}: Error connecting to heat pump by Modbus, reading reg-addr={DEVS[i][DEVADDR]}")
                     errors+=1
                     time.sleep(0.2)
                 else:
@@ -154,7 +154,7 @@ class BasePlugin:
         self.rs485.serial.close()  #  Close that door !
         if errors:
             self.heartbeatnow=self.heartbeat+1+(time.monotonic_ns()&7)
-            Domoticz.Status(f"Increase heartbeat to {self.heartbeatnow} to avoid concurrent access to the same serial port")
+            Domoticz.Error(f"Increase heartbeat to {self.heartbeatnow} to avoid concurrent access to the same serial port")
             Domoticz.Heartbeat(self.heartbeatnow)
         else: #no errors
             if self.heartbeatnow!=self.heartbeat:
@@ -195,7 +195,7 @@ class BasePlugin:
 
                  self.rs485.serial.close()
             except:
-                Domoticz.Status(f"{retry}: Error writing to heat pump Modbus reg={Register} value={Value}")
+                Domoticz.Error(f"{retry}: Error writing to heat pump Modbus reg={Register} value={Value}")
                 time.sleep(0.1)
             else:
                 Domoticz.Status(f"{retry}: Successfully written reg={Register} value={Value}")
