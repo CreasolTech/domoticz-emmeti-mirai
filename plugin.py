@@ -128,14 +128,14 @@ class BasePlugin:
         
         errors=0
         for i in DEVS:
-            for retry in range(1,4):  # try 2 time to access the serial port
-                if retry==3:
+            for retry in range(1,3):  # try 2 time to access the serial port
+                if retry==2:
                     self.rs485.serial.exclusive = False 
                     
                 try:
                     value=self.rs485.read_register(DEVS[i][DEVADDR], 0, 3, False)
                 except:
-                    Domoticz.Error(f"Try {retry}: Error connecting to heat pump by Modbus, reading reg-addr={DEVS[i][DEVADDR]}")
+                    Domoticz.Status(f"Try {retry}: Error connecting to heat pump by Modbus, reading reg-addr={DEVS[i][DEVADDR]}")
                     errors+=1
                     time.sleep(0.2)
                 else:
@@ -187,8 +187,8 @@ class BasePlugin:
 #        Devices[Unit].Refresh()
 
     def WriteRS485(self, Register, Value):
-        for retry in range(1,3):
-            if retry==2:
+        for retry in range(1,4):
+            if retry>=2:
                 self.rs485.serial.exclusive = False 
             try:
                  self.rs485.write_register(Register, Value, 0, 6, False)
