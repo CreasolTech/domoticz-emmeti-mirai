@@ -15,9 +15,9 @@ Requirements:
     2.Communication module Modbus USB to RS485 converter module
 """
 """
-<plugin key="EmmetiMirai" name="Emmeti-Mirai heat pump" version="1.2" author="CreasolTech" externallink="https://github.com/CreasolTech/domoticz-emmeti-mirai">
+<plugin key="EmmetiMirai" name="Emmeti-Mirai heat pump" version="1.3" author="CreasolTech" externallink="https://github.com/CreasolTech/domoticz-emmeti-mirai">
     <description>
-        <h2>Domoticz Emmeti Mirai heat pump - Version 1.2</h2>
+        <h2>Domoticz Emmeti Mirai heat pump - Version 1.3</h2>
         Get some values from the heat pump, and permit to set the compressor level to limit the power consumption to the desired value<br/>
         <b>CHECK THE MANUAL OF YOUR EMMETI HEAT PUMP: DIFFERENT heat pump MODEL/VERSION HAVE DIFFERENT ADDRESS FOR PARAMETERS!!!</b>
         Please open the plugin.py file and <b>verify parameter addresses (specified in DEVS variable) that are specified as base-0 address, while some Emmeti manuals
@@ -141,7 +141,7 @@ class BasePlugin:
                 else:
                     Domoticz.Status(f"Try {retry}: Successfully read reg.addr={DEVS[i][DEVADDR]}")
                     if i=="COMPRESSOR_MAX":
-                        nValue=1 if value>0 else 0  # dimmer: nValue=1 (On) or 0 (Off)
+                        nValue=2 if value>0 else 0  # dimmer: nValue=1 (On), nValue=2 (12%) or nValue=0 (Off)
                     else:
                         if DEVS[i][DEVTYPE]==80 and value>=32768:    #Temperature, negative
                             value=value-65536
@@ -172,7 +172,7 @@ class BasePlugin:
         if Unit==DEVS["COMPRESSOR_MAX"][DEVUNIT]:   #dimmer
             if Level>100:
                 Level=100
-            nValue=1 if Level>0 else 0
+            nValue=2 if Level>0 else 0
             self.WriteRS485(DEVS["COMPRESSOR_MAX"][DEVADDR], Level*10)
             Devices[Unit].Update(nValue=nValue, sValue=sValue)
         else:

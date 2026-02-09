@@ -1,6 +1,9 @@
 domoticz-emmeti-mirai plugin
 ChangeLog
 
+2026-02-09 Rev. 1.3
+Dimmer device (Compressor Max) now shows the % value instead of On
+
 20231220 1.2
 Fixed problem with refresh time longer than 30s (warning message on the log)
 
